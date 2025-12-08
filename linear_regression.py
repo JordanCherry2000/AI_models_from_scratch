@@ -94,46 +94,66 @@ def linear_regression_sgd(X, y, epochs=100, learning_rate=1e-3):
     print("Final bias:", bias)
 
 
-linear_regression_sgd(X, y, epochs=100, learning_rate=1e-3)
-weights, bias = linear_regression_batch_gradient_descent(X, y)
 
 
 # Mini batch Gradient Descent
 
-def linear_regression_mini_batch(X, y, epochs=100, learning_rate=1e-3, batch_size = 64):
+def linear_regression_mini_batch(X, y, epochs=100, learning_rate=1e-3, batch_size = 64, option = '1'):
+    alpha = 0.01
+    beta = 0.01
     n_samples, n_features = X.shape
     weights = np.zeros(n_features, dtype=np.float64)
     bias = 0.0
     for _ in range(epochs):
         permutation = np.random.permutation(len(X))
-        X = X[permutation]
-        Y = y[permutation]
+        X_shuffled = X[permutation]
+        Y_shuffled = y[permutation]
         for i in range(0, len(X), batch_size):
-            X_batch = X[i:i+batch_size]
-            Y_batch = Y[i:i+batch_size]
+            X_batch = X_shuffled[i:i+batch_size]
+            Y_batch = Y_shuffled[i:i+batch_size]
             m = len(X_batch)
 
                 # Forward pass
             y_pred = np.dot(X_batch, weights) + bias
             print('y pred', y_pred[1])
             error = y_pred - Y_batch
+
         
             # Compute gradients
-            gradient_w = (2 / m) * np.dot(X_batch.T, error)
+
+            #option 1: no regularization
+            if option == '1':
+                gradient_w = (2 / m) * np.dot(X_batch.T, error)
+            #option 2: L1 regularization
+            elif option == '2': 
+                gradient_w = (2 / m) * np.dot(X_batch.T, error) + beta * np.sign(weights)
+            #option 3: L2 regularization
+            elif option == '3':
+                gradient_w = (2 / m) * np.dot(X_batch.T, error) + 2 * alpha * weights
+            #option 4: elastic net
+            else:
+                gradient_w = (2 / m) * np.dot(X_batch.T, error) + 2 * alpha * weights + beta * np.sign(weights)
+            
             gradient_b = (2 / m) * np.sum(error)
 
             # Update weights and bias
             weights -= learning_rate * gradient_w
             bias -= learning_rate * gradient_b
+    
     print("mini_batch gradient descent")
     print("Final weights:", weights)
     print("Final bias:", bias)
 
 
 
-linear_regression_mini_batch(X, y, epochs=100, learning_rate=1e-3, batch_size = 64)
 
+model_selection = input("Which Model Would you like to run: Option 1: Batch Gradient Descent, Option 2: Stochastic Gradient Descent, Option 3: Mini-batch Gradient Descent")
 
-
-
+if model_selection == '1':
+    linear_regression_batch_gradient_descent(X, y)
+if model_selection == '2':
+    linear_regression_sgd(X, y)
+if model_selection == '3':
+    selection = input("Regularization: Option 1: None, Option 2: L1, Option 3: L2, Else: Elastic Net")
+    linear_regression_mini_batch(X, y, epochs=100, learning_rate=1e-3, batch_size = 64, option = selection)
 
