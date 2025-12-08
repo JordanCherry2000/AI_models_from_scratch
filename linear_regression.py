@@ -130,7 +130,7 @@ def linear_regression_mini_batch(X, y, epochs=100, learning_rate=1e-3, batch_siz
             #option 3: L2 regularization
             elif option == '3':
                 gradient_w = (2 / m) * np.dot(X_batch.T, error) + 2 * alpha * weights
-            #option 4: elastic net
+            #option 4: elastic net (l1 and l2)
             else:
                 gradient_w = (2 / m) * np.dot(X_batch.T, error) + 2 * alpha * weights + beta * np.sign(weights)
             
