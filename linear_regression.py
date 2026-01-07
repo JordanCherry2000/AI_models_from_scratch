@@ -51,6 +51,7 @@ def linear_regression_batch_gradient_descent(X, y, epochs=500, learning_rate=1e-
         gradient_w = (2 / n_samples) * np.dot(X.T, error)
         gradient_b = (2 / n_samples) * np.sum(error)
 
+
         # Update weights and bias
         weights -= learning_rate * gradient_w
         bias -= learning_rate * gradient_b
@@ -156,4 +157,6 @@ if model_selection == '2':
 if model_selection == '3':
     selection = input("Regularization: Option 1: None, Option 2: L1, Option 3: L2, Else: Elastic Net")
     linear_regression_mini_batch(X, y, epochs=100, learning_rate=1e-3, batch_size = 64, option = selection)
+
+
 
