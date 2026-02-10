@@ -28,56 +28,83 @@ region_encoded = pd.get_dummies(df['Region'], drop_first=True).astype(np.float64
 # Combine all features
 X = np.hstack([numeric_scaled, sex_encoded.to_numpy(), smoker_encoded.to_numpy(), region_encoded.to_numpy()]).astype(np.float64)
 
-y = df['Charges']
-
-print("X sample:\n", X[:5])
-print("y sample:\n", y[:5])
+y = df['Charges'].to_numpy(dtype=np.float64)
 
 
-class Branch:
-    def __init__(self, left=None, right=None, threshold=None, feature=None, value=None):
+class Node:
+    def __init__(self, left, right, threshold, feature_index, leaf_value):
         self.left = left
         self.right = right
         self.threshold = threshold
-        self.feature = feature
-        self.value = value
+        self.feature_index = feature_index
+        self.leaf_value = leaf_value
 
 
+max_depth = 6
+min_impurity_decrease = 0.05
+min_leaf_samples = 2
+min_sample_split = 10
+max_leaf_nodes = 3
 n_samples, n_features = X.shape
+indices = np.arange(n_samples)
 
-max_depth = None
-min_samples_split = 2
-min_samples_leaf = 5
-min_impurity_decrease = 0.0
-max_leaf_nodes = None
+def mse_of_y(y_vals):
+    if y_vals.size == 0:
+        return 0.0
+    mu = y_vals.mean()
+    return np.mean((y_vals - mu) **2)
+
+def find_best_split(X, y, indices):
+    n_samples, n_features = X.shape
+    n_node = indices.size
+    best_gain = 0.0
+    best_split = None
+    best_threshold = None
+    best_feature_index = None
+    parent_mse = mse_of_y(y[indices])
+    if n_node < min_sample_split:
+        return None, 0, None
+    for i in range(n_features):
+        feature_values = X[indices, i]
+        order = np.argsort(feature_values)
+        sorted_indices = indices[order]
+        vals = X[sorted_indices, i]
+        y_vals = y[sorted_indices]
+        for j in range(0, len(sorted_indices) - 1):
+            if vals[j] == vals[j+1]:
+                continue
+            k = j + 1
+            if k < min_leaf_samples or (n_node - k) < min_leaf_samples:
+                continue
+            y_left = y_vals[:k]
+            y_right = y_vals[k:]
+            threshold = (vals[j] + vals[j + 1]) / 2
+            left_split_mse = mse_of_y(y_left)
+            right_split_mse = mse_of_y(y_right)
+            weighted_mse = (k/n_node) * left_split_mse + ((n_node - k) /n_node) * right_split_mse
+            gain = parent_mse - weighted_mse
+            if gain > best_gain:
+                best_gain = gain
+                best_threshold = threshold
+                best_feature_index = i
+    return best_feature_index, best_gain, best_threshold
 
 
-def variance_reduction_decision_tree():
-    current_depth, current_samples_split, current_samples_leaf, current_leaf_nodes = 0
-    while current_depth <= max_depth or current_samples_split >= min_samples_split or current_samples_leaf >= min_samples_leaf or current_leaf_nodes <= max_leaf_nodes:
-        best_variance_reduction = None
-        
+def new_node(X, y, indices):
+    feature_index, best_gain, best_threshold = find_best_split(X, y, indices)
+    new_node = Node(X[:best_threshold], X[best_threshold:], best_threshold, feature_index, best_threshold)
 
 
 
 
-def best_split(X, y):
-    for i in range(0, n_features):
-            feature = X[:, i]
-            idx = np.argsort(feature)
-            feature_sorted = feature[idx]
-            y_sorted = y[idx]
-    for j in range(0, len(feature_sorted) - 1):
-                if feature_sorted[j] == feature_sorted[j+1]:
-                    continue
-                else:
-                    left_side_X = feature_sorted[:j+1]
-                    left_side_y = y_sorted[:j+1]
-                    right_side_X = feature_sorted[j+1:]
-                    right_side_y = y_sorted[j+1:]
-
-
-                
 
 
 
+            
+
+
+
+
+
+
+find_best_split(X, y, indices)

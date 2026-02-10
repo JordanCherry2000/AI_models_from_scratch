@@ -39,12 +39,20 @@ def mini_batch_gradient_descent (X, y, learning_rate, epochs, batch_size):
     n_samples, n_features = X.shape
     weights = np.zeros(n_features, dtype=np.float64)
     bias = 0.0
-    permutation = np.random.permutation(len(X))
-    X_shuffled = X[permutation]
-    Y_shuffled = y[permutation]
     for _ in range(epochs):
-        weights, bias = gradient_descent(X_shuffled[:batch_size], Y_shuffled[:batch_size], learning_rate, 1)
-    print(weights, bias)
+        permutation = np.random.permutation(len(X))
+        X_shuffled = X[permutation]
+        Y_shuffled = y[permutation]
+        y_pred = np.dot(X_shuffled[:batch_size], weights) + bias
+        error = y_pred - Y_shuffled[:batch_size]
+        gradient_w = (2/n_samples) * np.dot(X.T, error)
+        gradient_b = (2/n_samples) * np.sum(error)
+
+        weights -= learning_rate * gradient_w
+        bias -= learning_rate * gradient_b
+
+        return weights, bias
+        print(weights, bias)
     
 
 def gradient_descent (X, y, learning_rate, epochs):
